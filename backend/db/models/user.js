@@ -1,4 +1,6 @@
 'use strict';
+const bcrypt = require('bcryptjs')
+const {buildError} = require('../../utils/buildError.js');
 const {
   Model,
   Validator
@@ -13,6 +15,69 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
     }
+
+    toSafeObject() {
+      const {id, username, email, firstName, lastName, profile_picture, profile_cover} = this; //!context of User instance.
+      return {id, username, email, firstName, lastName, profile_picture, profile_cover };
+    }
+
+    validatePassword(password){
+      return bcrypt.compareSync(password, this.hashedPassword.toString());
+    }
+
+    static getCurrentUserById(id){
+      return User.scope('currentUser').findByPk(id);
+    }
+
+    static async login({credential, password}){
+      const{Op} = require('sequelize');
+      const user = await User.scope('loginUser').findOne({
+        where:{
+          [Op.or] : {
+            username: credential,
+            email: credential
+          }
+        }
+      });
+      if(user && user.validatePassword(password)){
+        return await User.scope('currentUser').findByPk(user.id);
+      }
+    }
+
+    static async signup({email, password, username}){
+      const {Op} = require('sequelize');
+      const hashedPassword = bcrypt.hashSync(password);
+      const checkUnique = await User.scope('loginUser').findAll({
+        where:{
+          [Op.or]:[
+            {email: email},
+            {username: username}
+          ]
+        }
+      });
+
+      if(checkUnique){
+        for(let i = 0; i < checkUnique.length; i++){
+          const user = checkUnique[i];
+          if(email === user.dataValues.email){
+            const err = buildError('There is already an account registered with that email', 'Email already registered', 403);
+            return err
+          }
+          if(username === user.dataValues.username){
+            const err = buildError('There is already an account registered with that username', 'username already registered', 403);
+            return err``
+          }
+        }
+      }
+
+      const user = await User.create({
+        username,
+        email,
+        hashedPassword
+      });
+      return await User.scope('currentUser').findByPk(user.id);
+    }
+
   }
   User.init({
     username: {
@@ -50,6 +115,14 @@ module.exports = (sequelize, DataTypes) => {
     defaultScope: {
       attributes: {
         exclude: ['hashedPassword', 'email', 'createdAt', 'updatedAt']
+      }
+    },
+    scopes:{
+      currentUser: {
+        attributes: {exclude: ['hashedPassword']}
+      },
+      loginUser:{
+        attributes:{}
       }
     }
   });
