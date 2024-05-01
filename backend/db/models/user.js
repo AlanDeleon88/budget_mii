@@ -17,8 +17,8 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     toSafeObject() {
-      const {id, username, email, firstName, lastName, profile_picture, profile_cover} = this; //!context of User instance.
-      return {id, username, email, firstName, lastName, profile_picture, profile_cover };
+      const {id, username, email, firstName, lastName} = this; //!context of User instance.
+      return {id, username, email, firstName, lastName };
     }
 
     validatePassword(password){
@@ -30,7 +30,8 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     static async login({credential, password}){
-      const{Op} = require('sequelize');
+      const { Op } = require('sequelize');
+      console.log(credential, password)
       const user = await User.scope('loginUser').findOne({
         where:{
           [Op.or] : {
@@ -39,6 +40,7 @@ module.exports = (sequelize, DataTypes) => {
           }
         }
       });
+      
       if(user && user.validatePassword(password)){
         return await User.scope('currentUser').findByPk(user.id);
       }
