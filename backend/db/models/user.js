@@ -40,7 +40,7 @@ module.exports = (sequelize, DataTypes) => {
           }
         }
       });
-      
+
       if(user && user.validatePassword(password)){
         return await User.scope('currentUser').findByPk(user.id);
       }
@@ -67,7 +67,7 @@ module.exports = (sequelize, DataTypes) => {
           }
           if(username === user.dataValues.username){
             const err = buildError('There is already an account registered with that username', 'username already registered', 403);
-            return err``
+            return err
           }
         }
       }
