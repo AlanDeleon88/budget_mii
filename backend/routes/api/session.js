@@ -34,6 +34,17 @@ router.route('/')
         res.clearCookie('token');
         return res.json({ message: 'log out successful' });
     })
+    .get(async (req, res, next) => {
+        const { user } = req;
+        if (user) {
+            const safeUser = user.toSafeObject();
+
+            return res.json({user:safeUser});
+        }
+        else {
+            return res.json({ user: null });
+        }
+    })
 
 
 
