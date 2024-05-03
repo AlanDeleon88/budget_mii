@@ -46,7 +46,7 @@ module.exports = (sequelize, DataTypes) => {
       }
     }
 
-    static async signup({email, password, username}){
+    static async signup({email, password, username, firstName, lastName}){
       const {Op} = require('sequelize');
       const hashedPassword = bcrypt.hashSync(password);
       const checkUnique = await User.scope('loginUser').findAll({
@@ -75,6 +75,8 @@ module.exports = (sequelize, DataTypes) => {
       const user = await User.create({
         username,
         email,
+        firstName,
+        lastName,
         hashedPassword
       });
       return await User.scope('currentUser').findByPk(user.id);
@@ -102,6 +104,20 @@ module.exports = (sequelize, DataTypes) => {
       validate: {
         len: [3, 256],
         isEmail: true
+      }
+    },
+    firstName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        len: [2, 40]
+      }
+    },
+    lastName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        len: [2, 50]
       }
     },
     hashedPassword: {

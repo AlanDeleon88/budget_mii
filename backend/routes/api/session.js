@@ -49,7 +49,9 @@ router.route('/')
     })
     .get(async (req, res, next) => {
         const { user } = req;
+
         if (user) {
+            // console.log(user)
             const safeUser = user.toSafeObject();
 
             return res.json({user:safeUser});
