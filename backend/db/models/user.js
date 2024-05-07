@@ -40,13 +40,13 @@ module.exports = (sequelize, DataTypes) => {
           }
         }
       });
-      
+
       if(user && user.validatePassword(password)){
         return await User.scope('currentUser').findByPk(user.id);
       }
     }
 
-    static async signup({email, password, username}){
+    static async signup({email, password, username, firstName, lastName}){
       const {Op} = require('sequelize');
       const hashedPassword = bcrypt.hashSync(password);
       const checkUnique = await User.scope('loginUser').findAll({
@@ -67,7 +67,7 @@ module.exports = (sequelize, DataTypes) => {
           }
           if(username === user.dataValues.username){
             const err = buildError('There is already an account registered with that username', 'username already registered', 403);
-            return err``
+            return err
           }
         }
       }
@@ -75,6 +75,8 @@ module.exports = (sequelize, DataTypes) => {
       const user = await User.create({
         username,
         email,
+        firstName,
+        lastName,
         hashedPassword
       });
       return await User.scope('currentUser').findByPk(user.id);
@@ -102,6 +104,20 @@ module.exports = (sequelize, DataTypes) => {
       validate: {
         len: [3, 256],
         isEmail: true
+      }
+    },
+    firstName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        len: [2, 40]
+      }
+    },
+    lastName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        len: [2, 50]
       }
     },
     hashedPassword: {
