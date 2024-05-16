@@ -208,6 +208,41 @@
  }
 ```
 
+### Create a new Account
+- Url: /api/users/:id/accounts
+- Method: POST
+- Request Body:
+```json
+    {
+        "type": "checking",
+        "balance": 4000,
+    }
+```
+
+#### Successful Response
+- status: 201
+- Response Body:
+    ```json
+        {
+            "id": 3,
+            "userId": 2,
+            "type": "Checking",
+            "balance": 4000
+        }
+    ```
+#### Error Handling:
+- Body Validation
+- status 401
+```json
+ {
+    "title": "Bad Request",
+    "errors": {
+        "type": "You must enter an account type",
+        "balance": "Balance cannot be empty"
+    }
+ }
+```
+
 ## Budget routes
 
 ### Get budget details
@@ -228,14 +263,12 @@
         "expenses" :[
             {
                 "id" : 1,
-                "accountId" : 1,
-                "categoryId" : 1,
+
             }
         ],
         "categories" : [
             {
-                "id" : 1,
-                "budgetId" : 1,
+                "id" : 1
             }
         ]
     }
@@ -285,6 +318,103 @@
  }
 ```
 
+### Create an expense for a budget
+- Url: /api/expenses
+- Method: POST
+- Request body:
+```json
+    {
+        "amount" : 200,
+        "budgetId": 1,
+        "accountId": 1,
+        "categoryId": 2,
+        "date" : "9-24-53"
+    }
+```
+
+#### Successful Response:
+- status 201
+```json
+    {
+        "id" : 1,
+        "budgetId": 1,
+        "accountId": 1,
+        "categoryId": 2,
+        "amount" : 200,
+        "date" : "9-24-53"
+    }
+```
+
+#### Error handling
+- Body validations
+- Status: 400
+```json
+    {
+        "title": "Bad request",
+        "errors" : {
+            "amount" : ["amount must be greater than 0", "amount field cannot be empty"],
+            "date": "date cannot be empty"
+        }
+    }
+```
+- Budget cannot be found
+- status: 404
+```json
+    {
+        "title": "Budget not found",
+        "message" : "budget with that id could not be found"
+    }
+```
+
+- Account cannot be found
+- status: 404
+```json
+    {
+        "title": "Account not found",
+        "message" : "account with that id could not be found"
+    }
+```
+
+- Category cannot be found
+- status: 404
+```json
+    {
+        "title": "Category not found",
+        "message" : "category with that id could not be found"
+    }
+```
+
+### Get all categories for a budget
+- Url: /api/budgets/:budgetId/categories
+- Method: GET
+- Request body: none
+
+#### Successful Response
+- Status: 200
+- Response body:
+```json
+    {
+        "categories":[
+            {
+                "id" : 1,
+                "budgetId" : 1,
+                "category" : "purchases",
+                "budget" : 100,
+                "actual" : 20,
+            }
+        ]
+    }
+```
+
+#### Error Handling:
+- Cannot find budget with that id
+- status 404
+```json
+ {
+    "title": "Cannot find budget",
+    "message": "Cannot find an expense with that id"
+ }
+```
 
 ### Add new budget
 - Url: /api/budgets
@@ -414,40 +544,7 @@
  }
 ```
 
-### Create a new Account balance
-- Url: /api/accounts/:accountId
-- Method: POST
-- Request Body:
-```json
-    {
-        "type": "checking",
-        "balance": 4000,
-    }
-```
 
-#### Successful Response
-- status: 201
-- Response Body:
-    ```json
-        {
-            "id": 3,
-            "userId": 2,
-            "type": "Checking",
-            "balance": 4000
-        }
-    ```
-#### Error Handling:
-- Body Validation
-- status 401
-```json
- {
-    "title": "Bad Request",
-    "errors": {
-        "type": "You must enter an account type",
-        "balance": "Balance cannot be empty"
-    }
- }
-```
 
 ### Edit an account
 - Url: /api/accounts/:accountId
@@ -496,14 +593,231 @@
     }
 ```
 
+#### Error Handling:
+- Could not find account with that Id
+- status 404
+```json
+ {
+    "title": "Could not find account",
+    "message": "Could not find a account with that id"
+ }
+```
+
 
 ## Expenses Routes
 
 ### Get details for an expense by id
+- Url: /api/expenses/:id
+- Method: GET
+- Request body: none
+
+#### Successful Response
+- status: 200
+- Response Body:
+    ```json
+        {
+            "id": 3,
+            "budgetId": 2,
+            "accountId": 1,
+            "categoryId":1,
+            "amount" : 200,
+            "date" : "9-25-24"
+        }
+    ```
+#### Error Handling:
+- Could not find an expense with that Id
+- status 404
+```json
+ {
+    "title": "Could not find expense",
+    "message": "Could not find expense with that id"
+ }
+```
+
+
+
+#### Successful Response:
+- Status: 201
+```json
+    {
+        "id" : 1,
+        "budgetId" : 1,
+        "amount": 200,
+        "accountId": 1,
+        "categoryId": 1,
+        "date" : "9-23-34"
+    }
+```
+
+#### Error handling
 
 ### Update an expense
+- Url: /api/expenses/:id
+- Method: PATCH / PUT
+- Request Body:
+```json
+    {
+        "amount" : 100,
+        "categoryId": 2,
+        "accountId": 2,
+        "date" : "9-26-24"
+    }
+
+```
+
+#### Successful Response
+- Status: 200
+- Response Body:
+```json
+    {
+        "message": "Successfully deleted"
+    }
+```
+
+#### Error Handling:
+- Could not find expense with that Id
+- Status 404
+```json
+ {
+    "title": "Could not find expense",
+    "message": "Could not find an expense with that id"
+ }
+```
+
+- Could not find category with that id
+- Status 404
+```json
+    {
+        "title": "Could not find category",
+        "message": "Could not find a category with that id"
+    }
+```
+- Body validations
+- Status 400
+```json
+    {
+        "title" : "body validation errors",
+        "errors":{
+            "amount" : "must be greater than 0",
+        }
+    }
+```
+
 
 ### Delete an expense
+- Url: /api/expenses
+- Method: DELETE
+- Request Body: none
+
+#### Sucessful response:
+```json
+    {
+        "message" : "Successful delete"
+    }
+```
 
 
 ## Categories Routes
+
+### Get details of a category by id
+- Url: /api/categories/:id
+- Method: GET
+- Request body: none
+
+#### Successful Response:
+```json
+    {
+        "id": 1,
+        "category": "food",
+        "budget": 200,
+        "actual": 50,
+    }
+```
+
+#### Error handling
+- Category with the id cannot be found.
+- Status: 404
+```json
+    {
+        "title" : "Category not found",
+        "message" : "Category with that id could not be found"
+    }
+```
+
+### Create a category
+
+### Update a category
+- Url: /api/categories/:id
+- Method: PUT / PATCH
+- Request body:
+```json
+    {
+        "category" : "eating out",
+        "budget" : "100",
+        "actual" : "20"
+    }
+```
+
+#### Successful Response:
+- Status: 200
+- Response body:
+```json
+    {
+        "category" : "eating out",
+        "budget" : "100",
+        "actual" : "20"
+    }
+```
+
+#### Error handling
+
+- Body validations
+- Status: 400
+```json
+    {
+        "title" : "Bad request",
+        "errors" : {
+            "category" :
+            [
+                "Category cannot be empty",
+                "Category must have a length between 2 and 40"
+            ],
+            "budget" : "Value must be greater than 0",
+            "actual" : "Value must be greater or equal to 0"
+
+        }
+    }
+```
+
+- Could not find Category with that id
+```json
+    {
+        "title" : "Category not found",
+        "message" : "Could not find that category with that id"
+    }
+```
+
+
+
+### Delete a category
+- Url: /api/categories/:id
+- Method: DELETE
+- Request body: none
+
+#### Sucessful response
+- Status: 200
+```json
+    {
+        "message" : "Successfully Deleted"
+    }
+```
+
+#### Error Handling
+- Could not find category with that id
+- Status: 404
+```json
+    {
+        "title" : "Category not found",
+        "message" : "Could not find a category with that id"
+    }
+```
